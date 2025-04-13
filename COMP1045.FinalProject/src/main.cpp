@@ -15,7 +15,8 @@ const int RGBGreenPin = 6;
 
 // --- Functions: Test Board Inputs --- //
 
-/* void button1press() // validated
+/*
+void button1press() // validated
 {
   if (digitalRead(button1) == HIGH)
   {
@@ -64,23 +65,24 @@ void RGBTest()
   digitalWrite(RGBBluePin, LOW);
 }
 
-// LCD validated via setup() */
+// LCD validated via setup()
+*/
 
 // --- Name and Species Traits --- //
 
-String species[] = {"Griffin", "Dragon", "Phoenix"};
-String namesGriffin[] = {"Talonclaw", "Stormcloud", "Windrider", "Thundercloud", "Moonbeak", "Mistwing", "Stormrider"};
-String namesDragon[] = {"Silverclaw", "Stoneblade", "Frostmaw", "Tempest", "Cloudrend", "Stormshower", "Skyrender"};
-String namesPhoenix[] = {"Fireheart", "Emberflare", "Dawnwing", "Ashfeather", "Stormcinder", "Flamewing", "Cindersoar"};
-String parentJobs[] = {"guarding the city", "hunting", "providing transportation", "teaching", "building infrastructure", "conducting city repairs", "meeting with delegates", "holding council"};
+const char* species[] = {"Griffin", "Dragon", "Phoenix"};
+const char* namesGriffin[] = {"Talonclaw", "Stormcloud", "Windrider", "Thundercloud", "Moonbeak", "Mistwing", "Stormrider"};
+const char* namesDragon[] = {"Silverclaw", "Stoneblade", "Frostmaw", "Tempest", "Cloudrend", "Stormshower", "Skyrender"};
+const char* namesPhoenix[] = {"Fireheart", "Emberflare", "Dawnwing", "Ashfeather", "Stormcinder", "Flamewing", "Cindersoar"};
+const char* parentJobs[] = {"guarding the city", "hunting", "providing transportation", "teaching", "building infrastructure", "conducting city repairs", "meeting with delegates", "holding council"};
 
 // --- Ongoing Values --- //
 
-String currentName = "";
-String currentSpecies = "";
-String job1 = "";
-String job2 = "";
+const char* currentName = "";
+const char* currentSpecies = "";
 String currentNicknameName = "";
+const char* job1 = "";
+const char* job2 = "";
 
 int currentAge = 0;
 int currentTiredness = 0;
@@ -104,76 +106,69 @@ bool isGenerated = false;
 
 void nicknamePrompt()
 {
-  Serial.println("\nWould you like to give them a nickname?");
-  Serial.println("Enter 'Y' for yes or 'N' for no:");
-
-  // clear serial data; kept getting gibberish without periodic serial cleaning
-  while (Serial.available())
+  while (true)
   {
-    Serial.read();
-  }
+    Serial.println("\nWould you like to give them a nickname?");
+    Serial.println("Enter 'Y' for yes or 'N' for no:");
 
-  while (true) // runs indefinitely until loop is exited with break or return
-  {
-    while (!Serial.available())
+    while (Serial.available()) Serial.read(); // Clear any existing data
+
+    while (!Serial.available()) delay(10);
+
+    char nicknamePromptResponse = (char)Serial.read();
+
+    if (nicknamePromptResponse == 'Y' || nicknamePromptResponse == 'y')
     {
-      delay(10);
-    }
+      Serial.print("What would you like to nickname ");
+      Serial.print(currentName);
+      Serial.println("?");
 
-    // using readStringUntil to prevent buffer issues
-    String nicknameInput = Serial.readStringUntil('\n');
-    nicknameInput.trim();
+      String nicknameInputAsString = "";
 
-    if (nicknameInput.equalsIgnoreCase("Y"))
-    {
-      Serial.println("What nickname would you like to give to " + String(currentName) + "?");
+      while (!Serial.available()) delay(10);
 
-      // clear buffer before reading nickname
-      while (Serial.available())
+      // Wait until the user finishes typing (newline or timeout)
+      unsigned long startTime = millis();
+      while (millis() - startTime < 1000) // wait 1 second for input to complete
       {
-        Serial.read();
+        while (Serial.available() > 0)
+        {
+          char c = Serial.read();
+          if (c == '\n' || c == '\r') break;
+          nicknameInputAsString += c;
+          startTime = millis(); // reset timer on input
+        }
       }
 
-      while (!Serial.available())
-      {
-        delay(10);
-      }
+      currentNicknameName = nicknameInputAsString;
+      Serial.print("You've nicknamed them ");
+      Serial.println(currentNicknameName);
 
-      // using readStringUntil for consistent input handling
-      String userInputNickname = Serial.readStringUntil('\n');
-      userInputNickname.trim();
-      currentNicknameName = userInputNickname;
-
-      Serial.println("You've nicknamed them " + currentNicknameName);
-      break; // exit loop after successful nickname entry
+      break;
     }
-
-    else if (nicknameInput.equalsIgnoreCase("N"))
+    else if (nicknamePromptResponse == 'N' || nicknamePromptResponse == 'n')
     {
       Serial.println("You're not choosing a nickname.");
-      break; // exit loop after declining nickname
+      break;
     }
-
     else
     {
-      Serial.println("Invalid entry. Please enter 'Y' or 'N'.");
-      // loop will repeat automatically
+      Serial.print("Invalid entry: ");
+      Serial.println(nicknamePromptResponse);
+      Serial.println("Please enter 'Y' or 'N'.");
     }
   }
-}
 
+  Serial.println("Please press button 2.");
+}
 void generateTraits()
 {
   if (digitalRead(button1) == HIGH && (!isGenerated))
   {
-    delay(1000);
+    delay(1000); // 1 second delay because i don't want multiple button presses register, cause that could mean multiple creatures generated
 
-    Serial.flush();
-    while (Serial.available())
-      Serial.read();
-
+    // set to true so another creature can't be generated if the button is pressed again
     isGenerated = true;
-    // Serial.println("Generating creature..."); debug
 
     currentAge = random(2, 5);
     currentTiredness = random(randomMin, randomMax);
@@ -188,26 +183,25 @@ void generateTraits()
     switch (speciesIndex)
     {
     case 0: // Griffin
-      // Serial.println("Griffin."); debug
       griffinNameIndex = random(0, 7);
       currentName = namesGriffin[griffinNameIndex];
       delay(50);
       break;
 
     case 1: // Dragon
-      // Serial.println("Dragon."); debug
       dragonNameIndex = random(0, 7);
       currentName = namesDragon[dragonNameIndex];
       delay(50);
       break;
 
     case 2: // Phoenix
-      // Serial.println("Phoenix."); debug
       phoenixNameIndex = random(0, 7);
       currentName = namesPhoenix[phoenixNameIndex];
       delay(50);
       break;
     }
+
+    displayCreature();
 
     job1Index = random(0, 8);
     job2Index = random(0, 8);
@@ -244,8 +238,49 @@ void generateTraits()
     Serial.print(" and ");
     Serial.print(job2);
     Serial.println(".");
-    delay(100);
+    delay(100); // Extra delay before prompt
+
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print(currentSpecies);
+    lcd.setCursor(0, 1);
+    lcd.print(currentName);
+
     nicknamePrompt();
+  }
+
+  else if (digitalRead(button1) == HIGH && (isGenerated))
+  {
+    delay(50);
+    Serial.print("You're already caring for ");
+    if (currentNicknameName != "")
+      Serial.print(currentNicknameName);
+    else
+      Serial.print(currentName);
+    Serial.println(".");
+    delay(500);
+  }
+}
+
+void displayCreature() {
+  // Only clear and update the LCD once when the species is set
+  if (currentSpecies == "Griffin") {
+    lcd.setCursor(0, 0);
+    lcd.print("<^•.•^>");
+    lcd.setCursor(0, 1);
+    lcd.print("//__|\\");
+  }
+  else if (currentSpecies == "Dragon") {
+    lcd.setCursor(0, 0);
+    lcd.print("~^._.^~");
+    lcd.setCursor(0, 1);
+    lcd.print(" /|\\");
+  }
+  else if (currentSpecies == "Phoenix") {
+    lcd.setCursor(0, 0);
+    lcd.print("^,^");
+    lcd.setCursor(0, 1);
+    lcd.print(" |||");
   }
 }
 
