@@ -4,17 +4,25 @@
 
 LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
 
-const int button1 = A1;
-const int button2 = A2;
-const int button3 = A3;
-const int button4 = A4;
-const int button5 = A5;
-const int button6 = 7;
-const int button7 = 8;
+/* to-do:
 
-const int RGBRedPin = 9;
-const int RGBBluePin = 10;
-const int RGBGreenPin = 6;
+- find a way to incorporate trust mechanics (it's mentioned in the intial traits)
+- play game function
+- parents pick up function
+- different ASCI art for different menus
+- find some way to incorporate RGB (maybe use it while we play game) */
+
+int button1 = A1;
+int button2 = A2;
+int button3 = A3;
+int button4 = A4;
+int button5 = A5;
+int button6 = 7;
+int button7 = 8;
+
+int RGBRedPin = 9;
+int RGBBluePin = 10;
+int RGBGreenPin = 6;
 
 // --- Functions: Test Board Inputs --- //
 
@@ -103,8 +111,8 @@ const char *trust[] = {"a little bit", "a fair amount", "quite a lot"};
 
 // --- Ongoing Values --- //
 
-String currentNickname = "";
-String nicknameInputAsString = "";
+char currentNickname[20] = "";
+char nicknameInput[20] = "";
 
 const char *currentName = "";
 const char *currentSpecies = "";
@@ -216,20 +224,22 @@ void nicknamePrompt()
 
     // do not touch this: //
 
-    String letterInput;
+    int i = 0;
+    memset(nicknameInput, 0, sizeof(nicknameInput)); // Clear the input buffer
 
     while (!Serial.available())
     {
       delay(10);
     }
 
-    while (Serial.available())
+    while (Serial.available() && i < sizeof(nicknameInput) - 1)
     {
-      char inputCharsAsString = (char)Serial.read();
-      letterInput += inputCharsAsString;
+      nicknameInput[i++] = (char)Serial.read();
       delay(200);
     }
-    currentNickname = letterInput;
+    nicknameInput[i] = '\0'; // Null-terminate the string
+    strncpy(currentNickname, nicknameInput, sizeof(currentNickname));
+    currentNickname[sizeof(currentNickname) - 1] = '\0'; // Ensure null termination
   }
 
   // end do not touch section //
@@ -237,7 +247,8 @@ void nicknamePrompt()
   else if (nicknamePromptResponse == 'N' || nicknamePromptResponse == 'n')
   {
     Serial.println("You're not choosing a nickname.");
-    currentNickname = currentName;
+    strncpy(currentNickname, currentName, sizeof(currentNickname));
+    currentNickname[sizeof(currentNickname) - 1] = '\0'; // Ensure null termination
   }
   else
   {
@@ -348,6 +359,166 @@ void generateTraits()
   }
 }
 
+void playGame()
+{
+}
+
+void foodAndWater()
+{
+  Serial.print("\nYou give some food and water to ");
+  Serial.print(currentNickname);
+  Serial.println(".");
+
+  int currentIndexHunger = -1;
+  for (int i = 0; i < 3; i++)
+  {
+    if (strcmp(currentHunger, hunger[i]) == 0)
+    {
+      currentIndexHunger = i;
+      break;
+    }
+  }
+
+  int currentIndexThirst = -1;
+  for (int i = 0; i < 3; i++)
+  {
+    if (strcmp(currentThirst, thirst[i]) == 0)
+    {
+      currentIndexThirst = i;
+      break;
+    }
+  }
+
+  if (currentIndexHunger < 2)
+  {
+    currentHunger = hunger[currentIndexHunger + 1];
+    Serial.print(currentNickname);
+    Serial.print(" is now ");
+    Serial.print(currentHunger);
+    Serial.println(".");
+  }
+  else
+  {
+    Serial.print(currentNickname);
+    Serial.print(" is ");
+    Serial.print(currentHunger);
+    Serial.println(".");
+  }
+
+  if (currentIndexThirst < 2)
+  {
+    currentThirst = thirst[currentIndexThirst + 1];
+    Serial.print(currentNickname);
+    Serial.print(" is now ");
+    Serial.print(currentThirst);
+    Serial.println(".");
+  }
+  else
+  {
+    Serial.print(currentNickname);
+    Serial.print(" is ");
+    Serial.print(currentThirst);
+    Serial.println(".");
+  }
+}
+
+void nap()
+{
+  Serial.print("\nYou tuck ");
+  Serial.print(currentNickname);
+  Serial.println(" in for a nap.");
+
+  /* using strcmp() function:
+  - compares two strings lexicographically (A-Z order)
+  - returns 0 when strings match
+  - negative number if string1 comes before string2 alphabetically
+  - positive number if string1 comes after string2 alphabetically */
+
+  int currentIndexNap = -1;
+  // initialize at -1 in case tireness level doesn't match any of the array values
+  for (int i = 0; i < 3; i++)
+  {
+    // loop to check all tiredness levels (i.e. indexes 0, 1, 2)
+    if (strcmp(currentTiredness, tiredness[i]) == 0)
+    {
+      // if the currentTiredness value matches the i index value of the array (i.e. if strcmp() returns 0)
+      currentIndexNap = i;
+      // if they do match, assigned currentIndexNap to the current i value, and then exit
+      break;
+    }
+  }
+
+  if (currentIndexNap < 2)
+  {
+    // if we're not already at the array's maximum tiredness level
+    currentTiredness = tiredness[currentIndexNap + 1];
+    // currentTiredness equals the currentindex plus one
+    Serial.print(currentNickname);
+    Serial.print(" is now ");
+    Serial.print(currentTiredness);
+    Serial.println(".");
+  }
+  else
+  {
+    Serial.print(currentNickname);
+    Serial.print(" is ");
+    Serial.print(currentTiredness);
+    Serial.println(".");
+  }
+}
+
+void headpats()
+{
+  Serial.print("\nYou pat ");
+  Serial.print(currentNickname);
+  Serial.println(" on the head.");
+
+  int currentIndexHappiness = -1;
+  for (int i = 0; i < 3; i++)
+  {
+    if (strcmp(currentHappiness, happiness[i]) == 0)
+    {
+      currentIndexHappiness = i;
+      break;
+    }
+  }
+
+  if (currentIndexHappiness < 2)
+  {
+    currentHappiness = happiness[currentIndexHappiness + 1];
+    Serial.print(currentNickname);
+    Serial.print(" is now ");
+    Serial.print(currentHappiness);
+    Serial.println(".");
+  }
+  else
+  {
+    Serial.print(currentNickname);
+    Serial.print(" is ");
+    Serial.print(currentHappiness);
+    Serial.println(".");
+  }
+}
+
+void displayCurrentCondition()
+{
+  Serial.print("\n");
+  Serial.print(currentNickname);
+  Serial.print(" is currently ");
+  Serial.print(currentTiredness);
+  Serial.println(".");
+  Serial.print("They're ");
+  Serial.print(currentThirst);
+  Serial.print(" and they're ");
+  Serial.print(currentHunger);
+  Serial.println(".");
+  Serial.print("They're ");
+  Serial.print(currentHappiness);
+  Serial.print(" and they trust you ");
+  Serial.print(currentTrust);
+  Serial.println(".");
+}
+
 void menuChooseAction()
 {
   bool isRefreshedRequired = true;
@@ -392,37 +563,37 @@ void menuChooseAction()
       // use a for loop to keep looping as time passes; better than using delay(), since delay() blocks all input
       if (digitalRead(button2) == HIGH)
       {
-        Serial.println("Function 2.");
+        playGame();
         isRefreshedRequired = true;
         break;
       }
       if (digitalRead(button3) == HIGH)
       {
-        Serial.println("Function 3.");
+        foodAndWater();
         isRefreshedRequired = true;
         break;
       }
       if (digitalRead(button4) == HIGH)
       {
-        Serial.println("Function 4.");
+        nap();
         isRefreshedRequired = true;
         break;
       }
       if (digitalRead(button5) == HIGH)
       {
-        Serial.println("Function 5.");
+        headpats();
         isRefreshedRequired = true;
         break;
       }
       if (digitalRead(button6) == HIGH)
       {
-        Serial.println("Function 6.");
+        displayCurrentCondition();
         isRefreshedRequired = true;
         break;
       }
       if (digitalRead(button7) == HIGH)
       {
-        Serial.println("Function 7.");
+        Serial.println("Button 7.");
         isRefreshedRequired = true;
         break;
       }
@@ -430,6 +601,7 @@ void menuChooseAction()
     }
   }
 }
+
 // setup and loop //
 
 void setup()
