@@ -99,6 +99,7 @@ const char *tiredness[] = {"very tired", "somewhat tired", "well rested"};
 const char *hunger[] = {"very hungry", "somewhat hungry", "well-fed"};
 const char *thirst[] = {"very thirsty", "somewhat thirsty", "well-hydrated"};
 const char *happiness[] = {"somewhat unhappy", "happy", "very happy"};
+const char *trust[] = {"barely at all", "just a tiny bit", "a little bit", "a fair bit", "quite a lot", "completely"};
 
 // --- Ongoing Values --- //
 
@@ -122,6 +123,7 @@ int griffinNameIndex = 0;
 int dragonNameIndex = 0;
 int phoenixNameIndex = 0;
 
+int trustIndex = 0;
 int job1Index = 0;
 int job2Index = 0;
 int tirednessIndex = 0;
@@ -142,9 +144,11 @@ void displayGriffin()
   lcd.clear();
   // Line 1: Eagle head and wings
   lcd.print(" {^v^}>> ");
+  delay(10);
   // Line 2: Lion body
   lcd.setCursor(0, 1);
   lcd.print(" /\\_/\\~~~>");
+  delay(10);
 }
 
 void displaySleepingGriffin()
@@ -152,9 +156,11 @@ void displaySleepingGriffin()
   lcd.clear();
   // Line 1: Sleeping eagle head and wings
   lcd.print(" {-v-}zz ");
+  delay(10);
   // Line 2: Curled up lion body
   lcd.setCursor(0, 1);
   lcd.print(" ~\\_/~  ");
+  delay(10);
 }
 
 void displayEatingGriffin()
@@ -162,9 +168,11 @@ void displayEatingGriffin()
   lcd.clear();
   // Line 1: Eagle head with food and wings
   lcd.print(" {^o^}>> ");
+  delay(10);
   // Line 2: Lion body with food
   lcd.setCursor(0, 1);
   lcd.print(" /\\_/\\<~~>");
+  delay(10);
 }
 
 void displayPlayingGriffin()
@@ -172,9 +180,11 @@ void displayPlayingGriffin()
   lcd.clear();
   // Line 1: Excited eagle head and wings
   lcd.print(" {^+^}>> ");
+  delay(10);
   // Line 2: Pouncing lion body
   lcd.setCursor(0, 1);
   lcd.print(" /\\_/\\===~");
+  delay(10);
 }
 
 // - Dragon - //
@@ -184,9 +194,11 @@ void displayDragon()
   lcd.clear();
   // Line 1: Head and wings
   lcd.print(" /^..^\\ ");
+  delay(10);
   // Line 2: Body and tail
   lcd.setCursor(0, 1);
   lcd.print(" \\_()_/--->");
+  delay(10);
 }
 
 void displaySleepingDragon()
@@ -194,9 +206,11 @@ void displaySleepingDragon()
   lcd.clear();
   // Line 1: Head tucked in, sleeping
   lcd.print("  (^-.-^)zz ");
+  delay(10);
   // Line 2: Coiled body
   lcd.setCursor(0, 1);
   lcd.print(" ~\\_()_/~~");
+  delay(10);
 }
 
 void displayEatingDragon()
@@ -204,9 +218,11 @@ void displayEatingDragon()
   lcd.clear();
   // Line 1: Head chewing
   lcd.print(" /^==^\\ ");
+  delay(10);
   // Line 2: Body with food in mouth
   lcd.setCursor(0, 1);
   lcd.print(" \\_()_/==>");
+  delay(10);
 }
 
 void displayPlayingDragon()
@@ -214,9 +230,11 @@ void displayPlayingDragon()
   lcd.clear();
   // Line 1: Excited head, fire breath
   lcd.print(" /^+^\\~~~ ");
+  delay(10);
   // Line 2: Running pose
   lcd.setCursor(0, 1);
   lcd.print(" \\_()_/===>>");
+  delay(10);
 }
 
 // - Phoenix - //
@@ -226,9 +244,11 @@ void displayPhoenix()
   lcd.clear();
   // Line 1: Head and flames
   lcd.print(" (^o^)>>");
+  delay(10);
   // Line 2: Fire trail
   lcd.setCursor(0, 1);
   lcd.print(" //_\\~~~~>");
+  delay(10);
 }
 
 void displaySleepingPhoenix()
@@ -236,9 +256,11 @@ void displaySleepingPhoenix()
   lcd.clear();
   // Line 1: Head resting, small embers
   lcd.print(" (-.-)~ ");
+  delay(10);
   // Line 2: Coiled fire
   lcd.setCursor(0, 1);
   lcd.print(" //_\\~~zZ~>");
+  delay(10);
 }
 
 void displayEatingPhoenix()
@@ -246,9 +268,11 @@ void displayEatingPhoenix()
   lcd.clear();
   // Line 1: Head nibbling
   lcd.print(" (^=^) ");
+  delay(10);
   // Line 2: Fire trail with food sparks
   lcd.setCursor(0, 1);
   lcd.print(" //_\\~~o~>");
+  delay(10);
 }
 
 void displayPlayingPhoenix()
@@ -256,9 +280,11 @@ void displayPlayingPhoenix()
   lcd.clear();
   // Line 1: Excited head, roaring fire
   lcd.print(" (^o^)====");
+  delay(10);
   // Line 2: Spiraling fire trail
   lcd.setCursor(0, 1);
   lcd.print("~\\~o~//>>");
+  delay(10);
 }
 
 // --- End ASCII Art --- //
@@ -447,6 +473,10 @@ void generateTraits()
     thirstIndex = random(0, 3);
     currentThirst = thirst[thirstIndex];
 
+    trustIndex = random(0, 2);
+    // only the first two trust levels
+    currentTrust = trust[trustIndex];
+
     happinessIndex = random(0, 3);
     currentHappiness = happiness[happinessIndex];
 
@@ -480,6 +510,10 @@ void generateTraits()
     Serial.print(currentHunger);
     Serial.println(F("."));
     delay(100);
+    Serial.print(F("They trust you "));
+    Serial.print(currentTrust);
+    Serial.println(F("."));
+    delay(100);
     Serial.print(F("Their parents are "));
     Serial.print(job1);
     Serial.print(F(" and "));
@@ -489,6 +523,7 @@ void generateTraits()
     nicknamePrompt();
   }
   else if (digitalRead(button1) == HIGH && (isGenerated))
+  // the program shouldn't ever access this else if statement, but putting it here as a failsafe in case i've missed something
   {
     delay(50);
     Serial.print(F("You're already caring for "));
@@ -499,9 +534,28 @@ void generateTraits()
 
 // - Menu Options - //
 
+void incrementTrust() {
+  
+  int currentLevel = -1;
+  for (int i = 0; i < 6; i++) {
+    if (strcmp(currentTrust, trust[i]) == 0) {
+      currentLevel = i;
+      break;
+    }
+  }
+  
+  if (currentLevel >= 0 && currentLevel < 5) {
+    currentTrust = trust[currentLevel + 1];
+  }
+}
+
 void danceParty()
 {
   displayPlayingCreature();
+  Serial.print("\n");
+  Serial.print("You and ");
+  Serial.print(currentNickname);
+  Serial.print(" have a little dance party.");
 
   digitalWrite(RGBRedPin, HIGH);
   delay(300);
@@ -542,11 +596,14 @@ void danceParty()
   digitalWrite(RGBBluePin, HIGH);
   delay(300);
   digitalWrite(RGBBluePin, LOW);
+
+  incrementTrust();
 }
 
 void foodAndWater()
 {
-  Serial.print(F("\nYou give some food and water to "));
+  Serial.print("\n");
+  Serial.print(F("You give some food and water to "));
   Serial.print(currentNickname);
   Serial.println(F("."));
   delay(1000);
@@ -603,11 +660,14 @@ void foodAndWater()
     Serial.print(currentThirst);
     Serial.println(F("."));
   }
+  incrementTrust();
+  delay(2000);
 }
 
 void nap()
 {
-  Serial.print(F("\nYou tuck "));
+  Serial.print("\n");
+  Serial.print(F("You tuck "));
   Serial.print(currentNickname);
   Serial.println(F(" in for a nap."));
   delay(1000);
@@ -638,14 +698,28 @@ void nap()
     Serial.print(currentTiredness);
     Serial.println(F("."));
   }
+  incrementTrust();
+  delay(2000);
 }
 
 void headpats()
 {
-  Serial.print(F("\nYou pat "));
-  Serial.print(currentNickname);
-  Serial.println(F(" on the head."));
   displayPlayingCreature();
+
+  if (strcmp(currentTrust, trust[5]) != 0)
+
+  {
+    Serial.print(currentNickname);
+    Serial.println("doesn't trust you enough yet for headpats.");
+  }
+  else
+  {
+    Serial.print("\n");
+    Serial.print(F("You pat "));
+    Serial.print(currentNickname);
+    Serial.println(F(" on the head."));
+  }
+
   delay(1000);
 
   int currentIndexHappiness = -1;
@@ -673,6 +747,8 @@ void headpats()
     Serial.print(currentHappiness);
     Serial.println(F("."));
   }
+  delay(2000);
+  incrementTrust();
 }
 
 void displayCurrentCondition()
@@ -682,17 +758,70 @@ void displayCurrentCondition()
   Serial.print(F(" is currently "));
   Serial.print(currentTiredness);
   Serial.println(F("."));
-  delay(200);
+  delay(400);
   Serial.print(F("They're "));
   Serial.print(currentThirst);
   Serial.print(F(" and they're "));
   Serial.print(currentHunger);
   Serial.println(F("."));
-  delay(200);
+  delay(400);
   Serial.print(F("They're "));
   Serial.print(currentHappiness);
+  Serial.print(F(" and they trust you "));
+  Serial.print(currentTrust);
   Serial.println(F("."));
+  delay(2000);
+}
+
+void parentsPickup() {
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Take care,");
+  lcd.setCursor(0, 1);
+  lcd.print(currentNickname);
+  delay(2000);
+
+  Serial.print(F("\n"));
+  Serial.print(currentNickname);
+  Serial.println(F("'s parents have arrived to pick them up."));
+  Serial.print(F("It's time for "));
+  Serial.print(currentNickname);
+  Serial.println(F(" to go home."));
+
+  delay(2000);
+
+  lcd.clear();
+
+  memset(currentNickname, 0, sizeof(currentNickname));
+  memset(nicknameInput, 0, sizeof(nicknameInput));
+  
+  currentName = "";
+  currentSpecies = "";
+  job1 = "";
+  job2 = "";
+  currentTiredness = "";
+  currentHunger = "";
+  currentThirst = "";
+  currentHappiness = "";
+  currentTrust = "";
+  
+  currentAge = 0;
+  speciesIndex = 0;
+  griffinNameIndex = 0;
+  dragonNameIndex = 0;
+  phoenixNameIndex = 0;
+  trustIndex = 0;
+  job1Index = 0;
+  job2Index = 0;
+  tirednessIndex = 0;
+  hungerIndex = 0;
+  thirstIndex = 0;
+  happinessIndex = 0;
+  
+  isGenerated = false;
   delay(1000);
+
+  Serial.println(F("Press Button 1 to care for a new creature."));
 }
 
 void menuChooseAction()
@@ -703,29 +832,30 @@ void menuChooseAction()
   {
     if (isRefreshedRequired)
     {
+      delay(500);
       Serial.println();
       Serial.println(F("--- Menu ---"));
-      delay(100);
+      delay(300);
       Serial.print(F("Press Button 2 to have a little dance party with "));
       Serial.print(currentNickname);
       Serial.println(F("."));
-      delay(100);
+      delay(300);
       Serial.print(F("Press Button 3 to give "));
       Serial.print(currentNickname);
       Serial.println(F(" food and water."));
-      delay(100);
+      delay(300);
       Serial.print(F("Press Button 4 to tuck "));
       Serial.print(currentNickname);
       Serial.println(F(" in for a nap."));
-      delay(100);
+      delay(300);
       Serial.print(F("Press Button 5 to give "));
       Serial.print(currentNickname);
       Serial.println(F(" headpats."));
-      delay(100);
+      delay(300);
       Serial.print(F("Press Button 6 to see "));
       Serial.print(currentNickname);
       Serial.println(F("'s current condition."));
-      delay(100);
+      delay(300);
       Serial.print(F("Press Button 7 when it's time for "));
       Serial.print(currentNickname);
       Serial.println(F("'s parents to pick them up."));
@@ -735,39 +865,54 @@ void menuChooseAction()
 
     for (int i = 0; i < 10; i++)
     {
+      if (digitalRead(button1) == HIGH)
+      {
+        Serial.print("\n");
+        Serial.print(F("You're already caring for "));
+        Serial.print(currentNickname);
+        Serial.println(".");
+        isRefreshedRequired = true;
+        break;
+      }
       if (digitalRead(button2) == HIGH)
       {
+        delay(50);
         danceParty();
         isRefreshedRequired = true;
         break;
       }
       if (digitalRead(button3) == HIGH)
       {
+        delay(50);
         foodAndWater();
         isRefreshedRequired = true;
         break;
       }
       if (digitalRead(button4) == HIGH)
       {
+        delay(50);
         nap();
         isRefreshedRequired = true;
         break;
       }
       if (digitalRead(button5) == HIGH)
       {
+        delay(50);
         headpats();
         isRefreshedRequired = true;
         break;
       }
       if (digitalRead(button6) == HIGH)
       {
+        delay(50);
         displayCurrentCondition();
         isRefreshedRequired = true;
         break;
       }
       if (digitalRead(button7) == HIGH)
       {
-        Serial.println(F("Button 7."));
+        delay(50);
+        parentsPickup();
         isRefreshedRequired = true;
         break;
       }
